@@ -5,10 +5,20 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 import ru.asmelnikov.wifiscanner.data.WifiNetwork
 import ru.asmelnikov.wifiscanner.data.WifiScanner
+import ru.asmelnikov.wifiscanner.domain.WifiItemSave
+import ru.asmelnikov.wifiscanner.domain.WifiRepository
+import javax.inject.Inject
 
-class WifiScannerViewModel(private val wifiScanner: WifiScanner) : ViewModel() {
+@HiltViewModel
+class WifiScannerViewModel @Inject constructor(
+    private val wifiScanner: WifiScanner,
+    private val repository: WifiRepository
+) : ViewModel() {
 
     private val _wifiNetworksLiveData = MutableLiveData<List<WifiNetwork>>()
     val wifiNetworksLiveData: LiveData<List<WifiNetwork>> = _wifiNetworksLiveData
@@ -33,5 +43,11 @@ class WifiScannerViewModel(private val wifiScanner: WifiScanner) : ViewModel() {
                 Log.d("Scan Error", error.toString())
             }
         })
+    }
+
+    fun insertWifiList(list: List<WifiItemSave>) {
+        viewModelScope.launch {
+            repository.insertWifiNetworks(list)
+        }
     }
 }
