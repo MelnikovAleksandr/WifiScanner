@@ -10,6 +10,6 @@
         android:label="FragmentWifiList" />
     <fragment
         android:id="@+id/fragmentWifiSaved"
-        android:name="ru.asmelnikov.wifiscanner.ui.FragmentWifiSaved"
+        android:name="ru.asmelnikov.wifiscanner.ui.saved_wifi_list_fragment.FragmentWifiSaved"
         android:label="FragmentWifiSaved" />
 </navigation>

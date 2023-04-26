@@ -3,40 +3,50 @@ package ru.asmelnikov.wifiscanner.ui.wifi_list_fragment
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
-import android.widget.Button
+import android.view.ViewGroup
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
 import ru.asmelnikov.wifiscanner.R
-import ru.asmelnikov.wifiscanner.data.WifiScanner
+import ru.asmelnikov.wifiscanner.databinding.FragmentWifiListBinding
 import ru.asmelnikov.wifiscanner.domain.toWifiSaved
 import ru.asmelnikov.wifiscanner.ui.adapter.WifiNetworkAdapter
 
 @AndroidEntryPoint
 class FragmentWifiList : Fragment(R.layout.fragment_wifi_list) {
 
+    private var _binding: FragmentWifiListBinding? = null
+    private val binding get() = _binding!!
+
     companion object {
         private const val PERMISSION_REQUEST_CODE = 123
     }
+
     private val viewModel: WifiScannerViewModel by viewModels()
-    //private lateinit var viewModel: WifiScannerViewModel
+
     private lateinit var adapter: WifiNetworkAdapter
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentWifiListBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val wifiScanner = WifiScanner(requireContext())
-//        val viewModelFactory = WifiScannerViewModelFactory(wifiScanner)
-//        viewModel = ViewModelProvider(this, viewModelFactory)[WifiScannerViewModel::class.java]
         adapter = WifiNetworkAdapter()
 
-        view.findViewById<Button>(R.id.scanButton).setOnClickListener {
+        binding.scanButton.setOnClickListener {
 
             if (ContextCompat.checkSelfPermission(
                     requireContext(),
@@ -81,18 +91,25 @@ class FragmentWifiList : Fragment(R.layout.fragment_wifi_list) {
 
         }
 
-        view.findViewById<RecyclerView>(R.id.networkRecyclerView).apply {
+        binding.networkRecyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = this@FragmentWifiList.adapter
         }
 
         viewModel.wifiNetworksLiveData.observe(viewLifecycleOwner) { networks ->
             adapter.updateNetworks(networks)
-            view.findViewById<Button>(R.id.saveButton).setOnClickListener {
+            if (networks.isNotEmpty()) binding.saveButton.isEnabled = true
+            binding.saveButton.setOnClickListener {
                 val list = networks.map { it.toWifiSaved() }
                 viewModel.insertWifiList(list)
+                Toast.makeText(requireContext(), "Wifi list is saved!", Toast.LENGTH_LONG).show()
             }
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }
 
