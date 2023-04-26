@@ -2,26 +2,27 @@ package ru.asmelnikov.wifiscanner.ui.adapters
 
 import android.Manifest
 import android.app.Activity
-import android.content.Context
 import android.content.pm.PackageManager
-import android.net.wifi.WifiConfiguration
-import android.net.wifi.WifiManager
+import android.os.Build
 import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
-import android.widget.ImageView
-import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.thanosfisherman.wifiutils.WifiUtils
+import com.thanosfisherman.wifiutils.wifiConnect.ConnectionErrorCode
+import com.thanosfisherman.wifiutils.wifiConnect.ConnectionSuccessListener
 import ru.asmelnikov.wifiscanner.R
 import ru.asmelnikov.wifiscanner.data.WifiNetwork
 import ru.asmelnikov.wifiscanner.databinding.WifiItemBinding
+
 
 class WifiNetworkAdapter : RecyclerView.Adapter<WifiNetworkAdapter.WifiListViewHolder>() {
 
@@ -41,6 +42,7 @@ class WifiNetworkAdapter : RecyclerView.Adapter<WifiNetworkAdapter.WifiListViewH
 
     val differ = AsyncListDiffer(this, callBack)
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     override fun onBindViewHolder(holder: WifiListViewHolder, position: Int) {
         val wifiItem = differ.currentList[position]
         holder.viewBinding.apply {
@@ -70,6 +72,7 @@ class WifiNetworkAdapter : RecyclerView.Adapter<WifiNetworkAdapter.WifiListViewH
         return WifiListViewHolder(binding)
     }
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     private fun showConnectDialog(network: WifiNetwork, view: View) {
         val builder = AlertDialog.Builder(view.context)
         builder.setTitle("Enter Password")
@@ -79,16 +82,11 @@ class WifiNetworkAdapter : RecyclerView.Adapter<WifiNetworkAdapter.WifiListViewH
         builder.setView(input)
         builder.setPositiveButton("Connect") { _, _ ->
             val password = input.text.toString()
-            val wifiConfiguration = WifiConfiguration()
-            wifiConfiguration.SSID = "\"" + network.ssid + "\""
-            wifiConfiguration.preSharedKey = "\"$password\""
-
-            val wifiManager =
-                view.context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
 
             val permissions = arrayOf(
                 Manifest.permission.ACCESS_WIFI_STATE,
-                Manifest.permission.CHANGE_WIFI_STATE
+                Manifest.permission.CHANGE_WIFI_STATE,
+                Manifest.permission.CHANGE_NETWORK_STATE
             )
             if (ActivityCompat.checkSelfPermission(
                     view.context,
@@ -97,30 +95,15 @@ class WifiNetworkAdapter : RecyclerView.Adapter<WifiNetworkAdapter.WifiListViewH
                 ActivityCompat.checkSelfPermission(
                     view.context,
                     Manifest.permission.CHANGE_WIFI_STATE
+                ) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(
+                    view.context,
+                    Manifest.permission.CHANGE_NETWORK_STATE
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
                 ActivityCompat.requestPermissions(view.context as Activity, permissions, 0)
                 return@setPositiveButton
             }
-
-            var networkId = wifiManager.addNetwork(wifiConfiguration)
-            if (networkId == -1) {
-                val existingConfig =
-                    wifiManager.configuredNetworks.firstOrNull { it.SSID == wifiConfiguration.SSID }
-                if (existingConfig != null) {
-                    networkId = existingConfig.networkId
-                }
-            }
-            if (networkId != -1) {
-                wifiManager.enableNetwork(networkId, true)
-                wifiManager.saveConfiguration()
-            } else {
-                Toast.makeText(
-                    view.context.applicationContext,
-                    "Failed to add network configuration",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
+            connectToWifi(network.ssid, password, view)
         }
         builder.setNegativeButton("Cancel") { dialog, _ ->
             dialog.cancel()
@@ -128,4 +111,22 @@ class WifiNetworkAdapter : RecyclerView.Adapter<WifiNetworkAdapter.WifiListViewH
         builder.show()
     }
 
+    private fun connectToWifi(ssid: String, key: String, view: View) {
+        WifiUtils.withContext(view.context)
+            .connectWith(ssid, key)
+            .onConnectionResult(object : ConnectionSuccessListener {
+                override fun success() {
+                    Toast.makeText(view.context, "SUCCESS!", Toast.LENGTH_SHORT).show()
+                }
+
+                override fun failed(errorCode: ConnectionErrorCode) {
+                    Toast.makeText(
+                        view.context,
+                        "EPIC FAIL! $errorCode",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            })
+            .start()
+    }
 }
