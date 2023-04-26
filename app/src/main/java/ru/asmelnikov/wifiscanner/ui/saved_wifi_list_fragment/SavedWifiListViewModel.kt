@@ -10,7 +10,6 @@ import javax.inject.Inject
 @HiltViewModel
 class SavedWifiListViewModel @Inject constructor(private val repository: WifiRepository) :
     ViewModel() {
-
     fun getAllWifi(): Flow<List<WifiItemSave>> = repository.getAllWifiNetworks()
 
 }

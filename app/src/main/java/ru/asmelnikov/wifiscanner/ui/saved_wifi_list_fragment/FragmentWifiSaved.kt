@@ -19,7 +19,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
 import ru.asmelnikov.wifiscanner.databinding.FragmentWifiSavedBinding
-import ru.asmelnikov.wifiscanner.ui.adapter.WifiSavedAdapter
+import ru.asmelnikov.wifiscanner.ui.adapters.WifiSavedAdapter
 import java.io.File
 
 @AndroidEntryPoint
@@ -55,7 +55,7 @@ class FragmentWifiSaved : Fragment() {
         }
 
         viewModel.getAllWifi().asLiveData().observe(this.viewLifecycleOwner) { wifiList ->
-            adapter.updateNetworks(wifiList)
+            adapter.differ.submitList(wifiList)
             if (wifiList.isNotEmpty()) binding.exportButton.isEnabled = true
             binding.exportButton.setOnClickListener {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
