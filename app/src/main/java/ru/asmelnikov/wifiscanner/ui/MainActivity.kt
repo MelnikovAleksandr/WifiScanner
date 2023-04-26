@@ -1,4 +1,4 @@
-package ru.asmelnikov.wifiscanner
+package ru.asmelnikov.wifiscanner.ui
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -6,6 +6,7 @@ import androidx.navigation.Navigation
 import androidx.navigation.ui.NavigationUI
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import dagger.hilt.android.AndroidEntryPoint
+import ru.asmelnikov.wifiscanner.R
 import ru.asmelnikov.wifiscanner.databinding.ActivityMainBinding
 
 @AndroidEntryPoint

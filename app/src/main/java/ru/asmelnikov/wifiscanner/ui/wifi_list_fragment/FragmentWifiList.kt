@@ -16,7 +16,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import ru.asmelnikov.wifiscanner.R
 import ru.asmelnikov.wifiscanner.databinding.FragmentWifiListBinding
 import ru.asmelnikov.wifiscanner.domain.toWifiSaved
-import ru.asmelnikov.wifiscanner.ui.adapter.WifiNetworkAdapter
+import ru.asmelnikov.wifiscanner.ui.adapters.WifiNetworkAdapter
 
 @AndroidEntryPoint
 class FragmentWifiList : Fragment(R.layout.fragment_wifi_list) {
@@ -97,7 +97,7 @@ class FragmentWifiList : Fragment(R.layout.fragment_wifi_list) {
         }
 
         viewModel.wifiNetworksLiveData.observe(viewLifecycleOwner) { networks ->
-            adapter.updateNetworks(networks)
+            adapter.differ.submitList(networks)
             if (networks.isNotEmpty()) binding.saveButton.isEnabled = true
             binding.saveButton.setOnClickListener {
                 val list = networks.map { it.toWifiSaved() }
