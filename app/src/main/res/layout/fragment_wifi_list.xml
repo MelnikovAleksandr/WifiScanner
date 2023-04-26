@@ -23,6 +23,7 @@
             android:id="@+id/saveButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:enabled="false"
             android:text="Save"
             android:layout_weight="1"
             android:layout_margin="16dp"/>
