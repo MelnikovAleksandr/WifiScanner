@@ -6,5 +6,7 @@
 4) Сохранять все найденные вайфай сети в базу данных
 5) Добавить функционал выгрузки базы во внешнее хранилище
 
-https://user-images.githubusercontent.com/83123472/234620084-351a5c2c-c824-46dd-b7d8-f708185f483d.mp4
+https://user-images.githubusercontent.com/83123472/234620084-351a5c2c-c824-46dd-b7d8-f708185f483d.mp4 https://user-images.githubusercontent.com/83123472/234677626-648378dc-fdcc-4c53-b2d1-3728d4dd40dd.mp4
+
+
 
